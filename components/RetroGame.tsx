@@ -44,7 +44,7 @@ const LEVELS: LevelData[] = [
     id: 3,
     name: "黑色比基尼女郎",
     // 第 3 關圖片
-    image: 'image: 'https://imagine-public.x.ai/imagine-public/images/a66cf140-6a0a-4338-896e-1bbf04f84794.png''
+    image: 'https://imagine-public.x.ai/imagine-public/images/a66cf140-6a0a-4338-896e-1bbf04f84794.png'
   },
   {
     id: 4,
