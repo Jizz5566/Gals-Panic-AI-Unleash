@@ -66,7 +66,7 @@ export const RetroGame: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const maskCanvasRef = useRef<HTMLCanvasElement | null>(null); // Offscreen canvas for mask
   const requestRef = useRef<number>(null);
-  
+
   // Game State
   const [gameState, setGameState] = useState<GameState>({
     score: 0,
@@ -76,7 +76,7 @@ export const RetroGame: React.FC = () => {
     status: 'MENU'
   });
 
-  const [rewardVideo, setRewardVideo] = useState<{title: string, url: string} | null>(null);
+  const [rewardVideo, setRewardVideo] = useState<{ title: string, url: string } | null>(null);
 
   // Ref to hold current state for game loop access (avoids stale closures)
   const gameStateRef = useRef(gameState);
@@ -95,18 +95,18 @@ export const RetroGame: React.FC = () => {
   }, [gameState.status]);
 
   // Refs for mutable game data (performance)
-  const playerRef = useRef({ 
-    x: CANVAS_WIDTH/2, 
-    y: CANVAS_HEIGHT - 2, 
-    isCutting: false, 
-    trail: [] as Point[], 
+  const playerRef = useRef({
+    x: CANVAS_WIDTH / 2,
+    y: CANVAS_HEIGHT - 2,
+    isCutting: false,
+    trail: [] as Point[],
     direction: null as string | null,
     cutStartPos: null as Point | null // Stores the position where the current cut started
   });
   const enemiesRef = useRef<Enemy[]>([]);
   const particlesRef = useRef<Particle[]>([]);
   const capturedRectsRef = useRef<Rect[]>([]);
-  
+
   // Input State Ref
   const keysPressed = useRef<Set<string>>(new Set());
 
@@ -121,20 +121,20 @@ export const RetroGame: React.FC = () => {
 
   // Initialize Level
   const startLevel = (levelIndex: number) => {
-    playerRef.current = { 
-      x: CANVAS_WIDTH/2, 
-      y: CANVAS_HEIGHT - 2, 
-      isCutting: false, 
-      trail: [], 
+    playerRef.current = {
+      x: CANVAS_WIDTH / 2,
+      y: CANVAS_HEIGHT - 2,
+      isCutting: false,
+      trail: [],
       direction: null,
-      cutStartPos: null 
+      cutStartPos: null
     };
     capturedRectsRef.current = [];
     particlesRef.current = [];
     setRewardVideo(null);
-    
+
     const bossSpeed = BOSS_SPEED_BASE + (levelIndex - 1) * 0.5;
-    
+
     // Spawn Boss
     const enemies: Enemy[] = [{
       x: CANVAS_WIDTH / 2,
@@ -159,7 +159,7 @@ export const RetroGame: React.FC = () => {
         });
       }
     }
-    
+
     enemiesRef.current = enemies;
 
     const newState = {
@@ -168,12 +168,12 @@ export const RetroGame: React.FC = () => {
       percentCleared: 0,
       status: 'PLAYING' as const
     };
-    
+
     setGameState(newState);
   };
 
   const spawnParticles = (x: number, y: number, count: number, color: string) => {
-    for(let i=0; i<count; i++) {
+    for (let i = 0; i < count; i++) {
       particlesRef.current.push({
         x, y,
         vx: (Math.random() - 0.5) * 10,
@@ -193,15 +193,15 @@ export const RetroGame: React.FC = () => {
   const handleDeath = () => {
     const currentLives = gameStateRef.current.lives;
     spawnParticles(playerRef.current.x, playerRef.current.y, 50, '#ff0000');
-    
+
     // Reset player position
-    playerRef.current = { 
-      x: CANVAS_WIDTH/2, 
-      y: CANVAS_HEIGHT - 2, 
-      isCutting: false, 
-      trail: [], 
+    playerRef.current = {
+      x: CANVAS_WIDTH / 2,
+      y: CANVAS_HEIGHT - 2,
+      isCutting: false,
+      trail: [],
       direction: null,
-      cutStartPos: null 
+      cutStartPos: null
     };
 
     if (currentLives > 1) {
@@ -234,12 +234,12 @@ export const RetroGame: React.FC = () => {
           // Collision Resolution: Push enemy OUT of the rect to prevent sticking
           const cx = rect.x + rect.width / 2;
           const cy = rect.y + rect.height / 2;
-          
-          const halfW = rect.width/2;
-          const halfH = rect.height/2;
+
+          const halfW = rect.width / 2;
+          const halfH = rect.height / 2;
           const distX = Math.abs(enemy.x - cx);
           const distY = Math.abs(enemy.y - cy);
-          
+
           // Basic overlap calculation
           const overlapX = (halfW + enemy.radius) - distX;
           const overlapY = (halfH + enemy.radius) - distY;
@@ -248,13 +248,13 @@ export const RetroGame: React.FC = () => {
           const pushFactor = 1.1;
 
           if (overlapX < overlapY) {
-             // X collision
-             enemy.vx *= -1;
-             enemy.x += (enemy.x > cx) ? overlapX * pushFactor : -overlapX * pushFactor;
+            // X collision
+            enemy.vx *= -1;
+            enemy.x += (enemy.x > cx) ? overlapX * pushFactor : -overlapX * pushFactor;
           } else {
-             // Y collision
-             enemy.vy *= -1;
-             enemy.y += (enemy.y > cy) ? overlapY * pushFactor : -overlapY * pushFactor;
+            // Y collision
+            enemy.vy *= -1;
+            enemy.y += (enemy.y > cy) ? overlapY * pushFactor : -overlapY * pushFactor;
           }
         }
       }
@@ -264,7 +264,7 @@ export const RetroGame: React.FC = () => {
       if (player.isCutting) {
         const dx = player.x - enemy.x;
         const dy = player.y - enemy.y;
-        if (Math.sqrt(dx*dx + dy*dy) < enemy.radius + 5) {
+        if (Math.sqrt(dx * dx + dy * dy) < enemy.radius + 5) {
           handleDeath();
         }
       }
@@ -274,8 +274,8 @@ export const RetroGame: React.FC = () => {
         for (const p of player.trail) {
           const tdx = p.x - enemy.x;
           const tdy = p.y - enemy.y;
-          if (Math.sqrt(tdx*tdx + tdy*tdy) < enemy.radius + 2) {
-             handleDeath();
+          if (Math.sqrt(tdx * tdx + tdy * tdy) < enemy.radius + 2) {
+            handleDeath();
           }
         }
       }
@@ -293,40 +293,45 @@ export const RetroGame: React.FC = () => {
   // --- Canvas Rendering ---
   const draw = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
+
     const currentLevelIndex = gameStateRef.current.level;
     const currentLevelData = LEVELS[(currentLevelIndex - 1) % LEVELS.length];
 
     // 1. Draw Background Image
     const img = new Image();
-    img.src = currentLevelData.image; 
+    img.src = currentLevelData.image;
     if (img.complete) {
       ctx.drawImage(img, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     } else {
       ctx.fillStyle = '#2d1b4e';
-      ctx.fillRect(0,0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+
+    // If showing full image, we skip the mask drawing to reveal everything
+    if (gameStateRef.current.status === 'SHOW_FULL_IMAGE') {
+      return; // Skip drawing mask, player, enemies, etc.
     }
 
     // 2. Prepare the "Curtain" (Mask)
     const maskCanvas = maskCanvasRef.current;
     const maskCtx = maskCanvas?.getContext('2d');
-    
+
     if (maskCanvas && maskCtx) {
       maskCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      
+
       maskCtx.globalCompositeOperation = 'source-over';
       maskCtx.fillStyle = 'rgba(20, 10, 40, 0.95)';
       maskCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      
+
       // Grid Lines
       maskCtx.strokeStyle = 'rgba(255, 0, 255, 0.15)';
       maskCtx.lineWidth = 1;
       maskCtx.beginPath();
-      for(let i=0; i<CANVAS_WIDTH; i+=40) {
-        maskCtx.moveTo(i,0); maskCtx.lineTo(i, CANVAS_HEIGHT);
+      for (let i = 0; i < CANVAS_WIDTH; i += 40) {
+        maskCtx.moveTo(i, 0); maskCtx.lineTo(i, CANVAS_HEIGHT);
       }
-      for(let i=0; i<CANVAS_HEIGHT; i+=40) {
-        maskCtx.moveTo(0,i); maskCtx.lineTo(CANVAS_WIDTH, i);
+      for (let i = 0; i < CANVAS_HEIGHT; i += 40) {
+        maskCtx.moveTo(0, i); maskCtx.lineTo(CANVAS_WIDTH, i);
       }
       maskCtx.stroke();
 
@@ -334,7 +339,7 @@ export const RetroGame: React.FC = () => {
       capturedRectsRef.current.forEach(rect => {
         maskCtx.fillRect(rect.x, rect.y, rect.width, rect.height);
       });
-      
+
       ctx.drawImage(maskCanvas, 0, 0);
     }
 
@@ -381,7 +386,7 @@ export const RetroGame: React.FC = () => {
     enemiesRef.current.forEach(enemy => {
       ctx.save();
       ctx.translate(enemy.x, enemy.y);
-      
+
       if (enemy.type === 'BOSS') {
         ctx.fillStyle = '#ff0055';
         ctx.beginPath();
@@ -398,7 +403,7 @@ export const RetroGame: React.FC = () => {
         ctx.arc(0, 0, enemy.radius, 0, Math.PI * 2);
         ctx.fill();
       }
-      
+
       ctx.restore();
     });
 
@@ -425,7 +430,7 @@ export const RetroGame: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
@@ -437,7 +442,7 @@ export const RetroGame: React.FC = () => {
     e.preventDefault(); // Prevent scroll/context menu
     keysPressed.current.add(code);
   };
-  
+
   const handleVirtualBtnEnd = (code: string, e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     keysPressed.current.delete(code);
@@ -447,15 +452,15 @@ export const RetroGame: React.FC = () => {
   useEffect(() => {
     const loop = () => {
       if (gameStateRef.current.status === 'PLAYING') {
-        let dx = 0; 
+        let dx = 0;
         let dy = 0;
-        
+
         // Input (Keyboard OR Virtual Keys)
         if (keysPressed.current.has('ArrowUp')) dy = -PLAYER_SPEED;
         if (keysPressed.current.has('ArrowDown')) dy = PLAYER_SPEED;
         if (keysPressed.current.has('ArrowLeft')) dx = -PLAYER_SPEED;
         if (keysPressed.current.has('ArrowRight')) dx = PLAYER_SPEED;
-        
+
         const isAction = keysPressed.current.has('KeyX');
 
         const player = playerRef.current;
@@ -466,16 +471,16 @@ export const RetroGame: React.FC = () => {
           // Screen borders
           if (x <= t || x >= CANVAS_WIDTH - t) return true;
           if (y <= t || y >= CANVAS_HEIGHT - t) return true;
-          
+
           // Captured Rect borders
           for (const r of capturedRectsRef.current) {
             // Vertical edges of this rect
             if ((Math.abs(x - r.x) <= t || Math.abs(x - (r.x + r.width)) <= t)) {
-               if (y >= r.y - t && y <= r.y + r.height + t) return true;
+              if (y >= r.y - t && y <= r.y + r.height + t) return true;
             }
             // Horizontal edges of this rect
             if ((Math.abs(y - r.y) <= t || Math.abs(y - (r.y + r.height)) <= t)) {
-               if (x >= r.x - t && x <= r.x + r.width + t) return true;
+              if (x >= r.x - t && x <= r.x + r.width + t) return true;
             }
           }
           return false;
@@ -487,8 +492,8 @@ export const RetroGame: React.FC = () => {
           // Use unified tolerance to match isOnLine logic
           if (x <= t || x >= CANVAS_WIDTH - t || y <= t || y >= CANVAS_HEIGHT - t) return true;
           for (const r of capturedRectsRef.current) {
-             // Allow being strictly inside or on the exact edge
-             if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) return true;
+            // Allow being strictly inside or on the exact edge
+            if (x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height) return true;
           }
           return false;
         };
@@ -496,7 +501,7 @@ export const RetroGame: React.FC = () => {
         // Check if player is currently safe (used for movement restrictions)
         // We are safe if we are effectively on a line OR inside a captured zone.
         const currentlySafe = isOnLine(player.x, player.y) || isSafe(player.x, player.y);
-        
+
         if (isAction) {
           // --- CUTTING MODE START/CONTINUE ---
           // Start cutting if we are safe and press the button
@@ -506,18 +511,18 @@ export const RetroGame: React.FC = () => {
             let snapped = false;
             if (Math.abs(player.x) <= t) { player.x = 0; snapped = true; }
             else if (Math.abs(player.x - CANVAS_WIDTH) <= t) { player.x = CANVAS_WIDTH; snapped = true; }
-            
-            if (!snapped) { 
+
+            if (!snapped) {
               if (Math.abs(player.y) <= t) { player.y = 0; snapped = true; }
               else if (Math.abs(player.y - CANVAS_HEIGHT) <= t) { player.y = CANVAS_HEIGHT; snapped = true; }
             }
 
             if (!snapped) {
-              for(const r of capturedRectsRef.current) {
+              for (const r of capturedRectsRef.current) {
                 if (Math.abs(player.x - r.x) <= t) { player.x = r.x; break; }
-                if (Math.abs(player.x - (r.x+r.width)) <= t) { player.x = r.x+r.width; break; }
+                if (Math.abs(player.x - (r.x + r.width)) <= t) { player.x = r.x + r.width; break; }
                 if (Math.abs(player.y - r.y) <= t) { player.y = r.y; break; }
-                if (Math.abs(player.y - (r.y+r.height)) <= t) { player.y = r.y+r.height; break; }
+                if (Math.abs(player.y - (r.y + r.height)) <= t) { player.y = r.y + r.height; break; }
               }
             }
 
@@ -525,21 +530,21 @@ export const RetroGame: React.FC = () => {
             player.cutStartPos = { x: player.x, y: player.y };
 
             player.isCutting = true;
-            player.trail = [{x: player.x, y: player.y}];
+            player.trail = [{ x: player.x, y: player.y }];
           }
-          
+
           if (player.isCutting) {
             const nextX = player.x + dx;
             const nextY = player.y + dy;
-            
+
             // Allow movement into void
             player.x = Math.max(0, Math.min(CANVAS_WIDTH, nextX));
             player.y = Math.max(0, Math.min(CANVAS_HEIGHT, nextY));
-            
+
             // Add trail point
-            const lastP = player.trail[player.trail.length-1];
+            const lastP = player.trail[player.trail.length - 1];
             if (Math.abs(lastP.x - player.x) > 5 || Math.abs(lastP.y - player.y) > 5) {
-              player.trail.push({x: player.x, y: player.y});
+              player.trail.push({ x: player.x, y: player.y });
             }
 
             // Capture Logic: If returned to safe zone (Check New Position)
@@ -559,25 +564,26 @@ export const RetroGame: React.FC = () => {
                 width: maxX - minX,
                 height: maxY - minY
               };
-              
+
               const boss = enemiesRef.current.find(e => e.type === 'BOSS');
               if (boss && !checkCollisionCircleRect(boss, newRect)) {
-                 capturedRectsRef.current.push(newRect);
-                 spawnParticles(newRect.x + newRect.width/2, newRect.y + newRect.height/2, 100, '#00ffff');
-                 
-                 const area = newRect.width * newRect.height;
-                 const totalArea = CANVAS_WIDTH * CANVAS_HEIGHT;
-                 const percent = (area / totalArea) * 100;
-                 
-                 setGameState(prev => {
-                   const newPercent = Math.min(100, prev.percentCleared + percent);
-                   if (newPercent >= TARGET_PERCENT) {
-                     return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area/10), status: 'LEVEL_COMPLETE' };
-                   }
-                   return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area/10) };
-                 });
+                capturedRectsRef.current.push(newRect);
+                spawnParticles(newRect.x + newRect.width / 2, newRect.y + newRect.height / 2, 100, '#00ffff');
+
+                const area = newRect.width * newRect.height;
+                const totalArea = CANVAS_WIDTH * CANVAS_HEIGHT;
+                const percent = (area / totalArea) * 100;
+
+                setGameState(prev => {
+                  const newPercent = Math.min(100, prev.percentCleared + percent);
+                  if (newPercent >= TARGET_PERCENT) {
+                    // Transition to SHOW_FULL_IMAGE instead of LEVEL_COMPLETE
+                    return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area / 10), status: 'SHOW_FULL_IMAGE' };
+                  }
+                  return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area / 10) };
+                });
               } else {
-                 spawnParticles(player.x, player.y, 20, '#ffff00'); 
+                spawnParticles(player.x, player.y, 20, '#ffff00');
               }
 
               player.isCutting = false;
@@ -617,7 +623,7 @@ export const RetroGame: React.FC = () => {
                 player.y = nextY;
               }
             }
-          } 
+          }
         }
       }
 
@@ -647,24 +653,24 @@ export const RetroGame: React.FC = () => {
       const rect = joystickRef.current.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
+
       let dx = clientX - centerX;
       let dy = clientY - centerY;
-      
+
       const dist = Math.sqrt(dx * dx + dy * dy);
       const maxDist = rect.width / 2;
-      
+
       // Clamp position for visual feedback
       if (dist > maxDist) {
         dx = (dx / dist) * maxDist;
         dy = (dy / dist) * maxDist;
       }
-      
+
       setPos({ x: dx, y: dy });
 
       // Map to Keys
       const threshold = 10; // Deadzone
-      
+
       // Reset all joystick inputs first
       keysPressed.current.delete('ArrowUp');
       keysPressed.current.delete('ArrowDown');
@@ -715,7 +721,7 @@ export const RetroGame: React.FC = () => {
     };
 
     return (
-      <div 
+      <div
         ref={joystickRef}
         className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full relative border-2 border-white/20 touch-none"
         onTouchStart={handleStart}
@@ -726,7 +732,7 @@ export const RetroGame: React.FC = () => {
         onMouseUp={handleEnd}
         onMouseLeave={handleEnd}
       >
-        <div 
+        <div
           className="absolute w-12 h-12 bg-retro-accent rounded-full shadow-[0_0_15px_#ff00ff] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
           style={{
             transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`
@@ -753,16 +759,16 @@ export const RetroGame: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-2 md:p-4 overflow-hidden">
-      
+
       {/* HUD */}
       <div className="flex justify-between w-full max-w-[784px] mb-2 font-mono text-retro-secondary text-xs md:text-base">
         <div className="flex gap-2 md:gap-4">
-           <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
-             分數: <span className="text-white">{gameState.score.toString().padStart(6, '0')}</span>
-           </div>
-           <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
-             生命: <span className="text-retro-accent">{'♥'.repeat(Math.max(0, gameState.lives))}</span>
-           </div>
+          <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
+            分數: <span className="text-white">{gameState.score.toString().padStart(6, '0')}</span>
+          </div>
+          <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
+            生命: <span className="text-retro-accent">{'♥'.repeat(Math.max(0, gameState.lives))}</span>
+          </div>
         </div>
         <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
           <span className="hidden md:inline">解鎖: </span>{gameState.percentCleared.toFixed(1)}% / {TARGET_PERCENT}%
@@ -771,9 +777,9 @@ export const RetroGame: React.FC = () => {
 
       {/* Game Container */}
       <div className="relative rounded-lg overflow-hidden shadow-[0_0_20px_rgba(255,0,255,0.3)] border-2 border-retro-accent bg-black touch-none max-w-full">
-        <canvas 
-          ref={canvasRef} 
-          width={CANVAS_WIDTH} 
+        <canvas
+          ref={canvasRef}
+          width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
           className="block bg-black h-[80vh] w-auto max-w-full object-contain touch-none"
           style={{ touchAction: 'none' }}
@@ -784,20 +790,20 @@ export const RetroGame: React.FC = () => {
           <>
             {/* JOYSTICK (Bottom Left) */}
             <div className="absolute bottom-8 left-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity">
-               <Joystick />
+              <Joystick />
             </div>
 
             {/* ACTION BUTTON (Bottom Right) - Resized to smaller */}
             <div className="absolute bottom-8 right-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity">
-               <VirtualKey 
-                 code="KeyX" 
-                 label={<span className="text-xl font-bold">X</span>} 
-                 className="w-16 h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]" 
-               />
+              <VirtualKey
+                code="KeyX"
+                label={<span className="text-xl font-bold">X</span>}
+                className="w-16 h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
+              />
             </div>
           </>
         )}
-        
+
         {/* Overlays */}
         {gameState.status === 'MENU' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-center backdrop-blur-sm px-4 z-30">
@@ -805,7 +811,7 @@ export const RetroGame: React.FC = () => {
               天蠶變: AI美女的解放
             </h1>
             <p className="text-retro-text mb-8 font-mono tracking-widest text-sm md:text-base">SILHOUETTE REVEAL</p>
-            <button 
+            <button
               onClick={() => startLevel(1)}
               className="px-8 py-3 bg-retro-accent text-white font-bold rounded hover:scale-105 transition-transform shadow-[0_0_15px_#ff00ff]"
             >
@@ -823,8 +829,8 @@ export const RetroGame: React.FC = () => {
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-900/80 text-center backdrop-blur-sm z-30">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">遊戲結束</h2>
             <p className="text-xl text-retro-secondary mb-6">分數: {gameState.score}</p>
-            <button 
-              onClick={() => setGameState(prev => ({...prev, status: 'MENU', lives: 3, score: 0, level: 1}))}
+            <button
+              onClick={() => setGameState(prev => ({ ...prev, status: 'MENU', lives: 3, score: 0, level: 1 }))}
               className="px-6 py-2 border-2 border-white text-white hover:bg-white hover:text-black transition-colors"
             >
               再試一次
@@ -832,11 +838,24 @@ export const RetroGame: React.FC = () => {
           </div>
         )}
 
+        {gameState.status === 'SHOW_FULL_IMAGE' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 z-40">
+            <div className="bg-black/50 backdrop-blur-sm p-4 rounded-xl border border-retro-accent/50 animate-fade-in-up">
+              <button
+                onClick={() => setGameState(prev => ({ ...prev, status: 'LEVEL_COMPLETE' }))}
+                className="px-8 py-3 bg-retro-accent text-white font-bold rounded shadow-[0_0_15px_#ff00ff] hover:scale-105 transition-transform animate-pulse"
+              >
+                點擊繼續
+              </button>
+            </div>
+          </div>
+        )}
+
         {gameState.status === 'LEVEL_COMPLETE' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-retro-secondary/90 text-center backdrop-blur-sm z-50 px-4">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-2">關卡完成！</h2>
             <p className="text-retro-bg font-bold mb-6">美女解鎖成功</p>
-            
+
             {rewardVideo && (
               <div className="bg-black/60 p-4 md:p-6 rounded-xl border-2 border-retro-accent mb-6 max-w-xs w-full animate-[pulse_2s_infinite]">
                 <div className="text-retro-accent font-mono text-sm mb-2 tracking-widest uppercase">
@@ -845,7 +864,7 @@ export const RetroGame: React.FC = () => {
                 <div className="text-white text-xs mb-4 opacity-70 truncate">
                   已解鎖: {rewardVideo.title}
                 </div>
-                <a 
+                <a
                   href={rewardVideo.url}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -860,7 +879,7 @@ export const RetroGame: React.FC = () => {
               </div>
             )}
 
-            <button 
+            <button
               onClick={() => startLevel(gameState.level + 1)}
               className="px-8 py-3 bg-white text-retro-secondary font-bold rounded shadow-lg hover:scale-110 transition-transform"
             >
@@ -869,7 +888,7 @@ export const RetroGame: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       <div className="mt-4 text-center text-retro-text/40 text-xs font-mono hidden md:block">
         注意：在切割時請避開紅色敵人，回到安全區才算成功。按住 X 鍵並移動進行切割。放開 X 鍵可取消當前劃線。
       </div>

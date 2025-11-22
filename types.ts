@@ -15,7 +15,7 @@ export interface GameState {
   lives: number;
   level: number;
   percentCleared: number;
-  status: 'MENU' | 'PLAYING' | 'LEVEL_COMPLETE' | 'GAME_OVER';
+  status: 'MENU' | 'PLAYING' | 'SHOW_FULL_IMAGE' | 'LEVEL_COMPLETE' | 'GAME_OVER';
 }
 
 export interface Enemy {
