@@ -696,13 +696,15 @@ export const RetroGame: React.FC = () => {
       keysPressed.current.delete('ArrowRight');
 
       if (dist > threshold) {
-        // Determine primary direction based on 45-degree sectors
-        if (Math.abs(dx) > Math.abs(dy)) {
-          // Horizontal
+        // Support diagonal movement by checking both axes independently
+        // Horizontal direction
+        if (Math.abs(dx) > threshold) {
           if (dx > 0) keysPressed.current.add('ArrowRight');
           else keysPressed.current.add('ArrowLeft');
-        } else {
-          // Vertical
+        }
+
+        // Vertical direction
+        if (Math.abs(dy) > threshold) {
           if (dy > 0) keysPressed.current.add('ArrowDown');
           else keysPressed.current.add('ArrowUp');
         }
@@ -721,7 +723,8 @@ export const RetroGame: React.FC = () => {
 
     const handleMove = (e: React.TouchEvent | React.MouseEvent) => {
       if (!active) return;
-      e.preventDefault(); // Prevent scrolling
+      // Note: preventDefault removed to avoid passive event listener error
+      // Touch scrolling is already prevented by CSS touch-action: none
       if ('touches' in e) {
         updateJoystick(e.touches[0].clientX, e.touches[0].clientY);
       } else {
@@ -776,10 +779,10 @@ export const RetroGame: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-2 md:p-4 overflow-hidden">
+    <div className="flex flex-col items-center justify-between w-full h-full p-2 md:p-4 overflow-hidden">
 
       {/* HUD */}
-      <div className="flex justify-between w-full max-w-[784px] mb-2 font-mono text-retro-secondary text-xs md:text-base">
+      <div className="flex justify-between w-full max-w-[784px] mb-0 md:mb-2 font-mono text-retro-secondary text-xs md:text-base">
         <div className="flex gap-2 md:gap-4">
           <div className="bg-retro-card px-2 md:px-4 py-1 md:py-2 rounded border border-retro-secondary/30 whitespace-nowrap">
             分數: <span className="text-white">{gameState.score.toString().padStart(6, '0')}</span>
@@ -799,30 +802,30 @@ export const RetroGame: React.FC = () => {
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          className="block bg-black h-[75dvh] w-auto max-w-full object-contain touch-none"
+          className="block bg-black h-[calc(100dvh-180px)] md:h-[75dvh] w-auto max-w-full object-contain touch-none"
           style={{ touchAction: 'none' }}
         />
 
-        {/* VIRTUAL CONTROLS OVERLAY (Always visible on screen, semi-transparent on Desktop to not obstruct) */}
+        {/* VIRTUAL CONTROLS OVERLAY (Desktop only - overlaid on canvas) */}
         {gameState.status === 'PLAYING' && (
           <>
-            {/* JOYSTICK (Bottom Left) */}
+            {/* JOYSTICK (Bottom Left) - Desktop only */}
             <div
-              className="absolute left-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity"
+              className="hidden md:block absolute left-8 z-20 pointer-events-auto opacity-50 hover:opacity-100 transition-opacity"
               style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
             >
               <Joystick />
             </div>
 
-            {/* ACTION BUTTON (Bottom Right) - Resized to smaller */}
+            {/* ACTION BUTTON (Bottom Right) - Desktop only */}
             <div
-              className="absolute right-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity"
+              className="hidden md:block absolute right-8 z-20 pointer-events-auto opacity-50 hover:opacity-100 transition-opacity"
               style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
             >
               <VirtualKey
                 code="KeyX"
                 label={<span className="text-xl font-bold">X</span>}
-                className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
+                className="w-16 h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
               />
             </div>
           </>
@@ -830,21 +833,45 @@ export const RetroGame: React.FC = () => {
 
         {/* Overlays */}
         {gameState.status === 'MENU' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-center backdrop-blur-sm px-4 z-30">
-            <h1 className="text-3xl md:text-5xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-retro-secondary to-retro-accent mb-4 filter drop-shadow-[0_0_10px_rgba(255,0,255,0.5)]">
-              天蠶變: AI美女的解放
-            </h1>
-            <p className="text-retro-text mb-8 font-mono tracking-widest text-sm md:text-base">SILHOUETTE REVEAL</p>
-            <button
-              onClick={() => startLevel(1)}
-              className="px-8 py-3 bg-retro-accent text-white font-bold rounded hover:scale-105 transition-transform shadow-[0_0_15px_#ff00ff]"
-            >
-              開始遊戲
-            </button>
-            <div className="mt-8 text-xs text-gray-500 font-mono space-y-2">
-              <p className="hidden md:block">PC: 方向鍵移動 • 按住 X 鍵切割</p>
-              <p className="block md:hidden text-retro-secondary">手機: 使用左側搖桿移動 • 右側按鈕切割</p>
-              <p>清除 {TARGET_PERCENT}% 區域以解鎖隱藏影片</p>
+          <div className="absolute inset-0 z-30">
+            {/* Background Image */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: 'url(https://imagine-public.x.ai/imagine-public/images/a66cf140-6a0a-4338-896e-1bbf04f84794.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
+            />
+
+            {/* Fog/Curtain Overlay - Light at top (face area), heavier at bottom */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
+
+            {/* Additional radial gradient to highlight face area */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: 'radial-gradient(ellipse 300px 250px at center 30%, transparent 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.7) 60%)'
+              }}
+            />
+
+            {/* Menu Content */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center backdrop-blur-sm px-4">
+              <h1 className="text-3xl md:text-3xl font-black italic text-retro-accent mb-4 filter drop-shadow-[0_0_20px_rgba(255,0,255,0.8)]">
+                天蠶變: AI美女的解放
+              </h1>
+              <p className="text-[#00ffff] mb-8 font-mono tracking-widest text-sm md:text-base drop-shadow-[0_0_10px_rgba(0,255,255,0.5)]">GalsPanic: The Beauty Reveal</p>
+              <button
+                onClick={() => startLevel(1)}
+                className="px-8 py-3 bg-retro-accent text-white font-bold rounded hover:scale-105 transition-transform shadow-[0_0_15px_#ff00ff]"
+              >
+                開始遊戲
+              </button>
+              <div className="mt-8 text-xs text-gray-500 font-mono space-y-2">
+                <p className="hidden md:block">PC: 方向鍵移動 • 按住 X 鍵切割</p>
+                <p className="block md:hidden text-retro-secondary">手機: 使用左側搖桿移動 • 右側按鈕切割</p>
+                <p>清除 {TARGET_PERCENT}% 區域以解鎖隱藏影片</p>
+              </div>
             </div>
           </div>
         )}
@@ -912,6 +939,25 @@ export const RetroGame: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* MOBILE CONTROLS AREA (Below canvas on mobile, hidden on desktop) */}
+      {gameState.status === 'PLAYING' && (
+        <div className="flex md:hidden justify-between items-center w-full max-w-[784px] px-8 py-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 1rem)' }}>
+          {/* JOYSTICK (Mobile - Bottom area) */}
+          <div className="pointer-events-auto">
+            <Joystick />
+          </div>
+
+          {/* ACTION BUTTON (Mobile - Bottom area) */}
+          <div className="pointer-events-auto">
+            <VirtualKey
+              code="KeyX"
+              label={<span className="text-xl font-bold">X</span>}
+              className="w-12 h-12 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
+            />
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 text-center text-retro-text/40 text-xs font-mono hidden md:block">
         注意：在切割時請避開紅色敵人，回到安全區才算成功。按住 X 鍵並移動進行切割。放開 X 鍵可取消當前劃線。
