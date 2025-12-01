@@ -1,8 +1,35 @@
 @import "tailwindcss";
 
+/* Mobile viewport fix - Use dynamic viewport height */
+html {
+    height: 100vh;
+    /* Fallback for older browsers */
+    height: 100dvh;
+    /* Dynamic viewport height */
+    height: -webkit-fill-available;
+    /* iOS Safari */
+}
+
 body {
     background-color: #1a0b2e;
     color: #e0e0e0;
+    height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Dynamic viewport height */
+    height: -webkit-fill-available;
+    /* iOS Safari */
+    overflow: hidden;
+    /* Prevent scroll on mobile */
+}
+
+#root {
+    height: 100vh;
+    /* Fallback */
+    height: 100dvh;
+    /* Dynamic viewport height */
+    height: -webkit-fill-available;
+    /* iOS Safari */
 }
 
 /* Custom Scrollbar */

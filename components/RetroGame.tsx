@@ -781,7 +781,7 @@ export const RetroGame: React.FC = () => {
           ref={canvasRef}
           width={CANVAS_WIDTH}
           height={CANVAS_HEIGHT}
-          className="block bg-black h-[80vh] w-auto max-w-full object-contain touch-none"
+          className="block bg-black h-[75dvh] w-auto max-w-full object-contain touch-none"
           style={{ touchAction: 'none' }}
         />
 
