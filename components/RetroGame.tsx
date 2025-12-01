@@ -723,7 +723,7 @@ export const RetroGame: React.FC = () => {
     return (
       <div
         ref={joystickRef}
-        className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center relative border-2 border-white/20 touch-none"
+        className="w-24 h-24 md:w-32 md:h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center relative border-2 border-white/20 touch-none"
         onTouchStart={handleStart}
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
@@ -733,7 +733,7 @@ export const RetroGame: React.FC = () => {
         onMouseLeave={handleEnd}
       >
         <div
-          className="w-12 h-12 bg-retro-accent rounded-full shadow-[0_0_15px_#ff00ff] pointer-events-none"
+          className="w-10 h-10 md:w-12 md:h-12 bg-retro-accent rounded-full shadow-[0_0_15px_#ff00ff] pointer-events-none"
           style={{
             transform: `translate(${pos.x}px, ${pos.y}px)`
           }}
@@ -789,16 +789,22 @@ export const RetroGame: React.FC = () => {
         {gameState.status === 'PLAYING' && (
           <>
             {/* JOYSTICK (Bottom Left) */}
-            <div className="absolute bottom-8 left-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity">
+            <div
+              className="absolute left-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity"
+              style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+            >
               <Joystick />
             </div>
 
             {/* ACTION BUTTON (Bottom Right) - Resized to smaller */}
-            <div className="absolute bottom-8 right-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity">
+            <div
+              className="absolute right-8 z-20 pointer-events-auto opacity-70 md:opacity-50 hover:opacity-100 transition-opacity"
+              style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+            >
               <VirtualKey
                 code="KeyX"
                 label={<span className="text-xl font-bold">X</span>}
-                className="w-16 h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
+                className="w-12 h-12 md:w-16 md:h-16 rounded-full border-2 border-retro-accent bg-retro-accent/20 shadow-[0_0_15px_#ff00ff]"
               />
             </div>
           </>
