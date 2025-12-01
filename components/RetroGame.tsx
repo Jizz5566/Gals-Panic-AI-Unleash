@@ -723,7 +723,7 @@ export const RetroGame: React.FC = () => {
     return (
       <div
         ref={joystickRef}
-        className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full relative border-2 border-white/20 touch-none"
+        className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center relative border-2 border-white/20 touch-none"
         onTouchStart={handleStart}
         onTouchMove={handleMove}
         onTouchEnd={handleEnd}
@@ -733,9 +733,9 @@ export const RetroGame: React.FC = () => {
         onMouseLeave={handleEnd}
       >
         <div
-          className="absolute w-12 h-12 bg-retro-accent rounded-full shadow-[0_0_15px_#ff00ff] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          className="w-12 h-12 bg-retro-accent rounded-full shadow-[0_0_15px_#ff00ff] pointer-events-none"
           style={{
-            transform: `translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px))`
+            transform: `translate(${pos.x}px, ${pos.y}px)`
           }}
         />
       </div>
