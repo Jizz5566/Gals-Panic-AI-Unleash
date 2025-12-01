@@ -213,6 +213,13 @@ export const RetroGame: React.FC = () => {
     }
   };
 
+  // Helper function to calculate overlap area between two rectangles
+  const calculateOverlapArea = (rect1: Rect, rect2: Rect): number => {
+    const overlapX = Math.max(0, Math.min(rect1.x + rect1.width, rect2.x + rect2.width) - Math.max(rect1.x, rect2.x));
+    const overlapY = Math.max(0, Math.min(rect1.y + rect1.height, rect2.y + rect2.height) - Math.max(rect1.y, rect2.y));
+    return overlapX * overlapY;
+  };
+
   const updateGame = () => {
     if (gameStateRef.current.status !== 'PLAYING') return;
 
@@ -570,17 +577,28 @@ export const RetroGame: React.FC = () => {
                 capturedRectsRef.current.push(newRect);
                 spawnParticles(newRect.x + newRect.width / 2, newRect.y + newRect.height / 2, 100, '#00ffff');
 
-                const area = newRect.width * newRect.height;
+                // Calculate ONLY the non-overlapping new area
+                let baseArea = newRect.width * newRect.height;
+                let overlapArea = 0;
+
+                // Subtract overlaps with all existing captured rectangles
+                // Note: We loop through all EXCEPT the last one (which is the newRect we just added)
+                for (let i = 0; i < capturedRectsRef.current.length - 1; i++) {
+                  overlapArea += calculateOverlapArea(newRect, capturedRectsRef.current[i]);
+                }
+
+                // Net new area = base area minus any overlaps
+                const netNewArea = Math.max(0, baseArea - overlapArea);
                 const totalArea = CANVAS_WIDTH * CANVAS_HEIGHT;
-                const percent = (area / totalArea) * 100;
+                const percent = (netNewArea / totalArea) * 100;
 
                 setGameState(prev => {
                   const newPercent = Math.min(100, prev.percentCleared + percent);
                   if (newPercent >= TARGET_PERCENT) {
                     // Transition to SHOW_FULL_IMAGE instead of LEVEL_COMPLETE
-                    return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area / 10), status: 'SHOW_FULL_IMAGE' };
+                    return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(netNewArea / 10), status: 'SHOW_FULL_IMAGE' };
                   }
-                  return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(area / 10) };
+                  return { ...prev, percentCleared: newPercent, score: prev.score + Math.floor(netNewArea / 10) };
                 });
               } else {
                 spawnParticles(player.x, player.y, 20, '#ffff00');
